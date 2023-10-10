@@ -54,7 +54,8 @@ int main() {
     srand(time(NULL));
     int target = 0;
 
-    while (target < 1) {
+    while (target <= 1) {
+        printf("waiting for number > 1 \n");
         scanf("%d", &target);
     }
 
