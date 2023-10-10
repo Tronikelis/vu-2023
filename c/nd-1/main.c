@@ -55,8 +55,12 @@ int main() {
     int target = 0;
 
     while (target <= 1) {
-        printf("waiting for number > 1 \n");
+        printf("waiting for number > 1\n");
         scanf("%d", &target);
+        if (target == 0) {
+            printf("a number is required\n");
+            return 1;
+        }
     }
 
     int* arr = malloc(target * sizeof(int));
@@ -113,4 +117,6 @@ int main() {
     free(arr);
     free(only_positives);
     free(only_negatives);
+
+    return 0;
 }
