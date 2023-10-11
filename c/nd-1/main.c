@@ -56,9 +56,9 @@ int main() {
 
     while (target <= 1) {
         printf("waiting for number > 1\n");
-        int res = scanf("%d", &target);
+        int chars = scanf("%d", &target);
 
-        if (res != 1) {
+        if (chars != 1) {
             printf("that wasn't a number\n");
             int c;
             scanf("%c", &c);
