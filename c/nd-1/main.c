@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-int TRUE = 0;
-int FALSE = 1;
-
 int positive_count(int* arr, int length) {
     int count = 0;
 
