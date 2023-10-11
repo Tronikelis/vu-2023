@@ -56,10 +56,12 @@ int main() {
 
     while (target <= 1) {
         printf("waiting for number > 1\n");
-        scanf("%d", &target);
-        if (target == 0) {
-            printf("a number is required\n");
-            return 1;
+        int res = scanf("%d", &target);
+
+        if (res != 1) {
+            printf("that wasn't a number\n");
+            int c;
+            scanf("%c", &c);
         }
     }
 
