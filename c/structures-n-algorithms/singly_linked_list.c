@@ -43,6 +43,10 @@ void LinkedList_append(struct LinkedList* list, int value) {
 }
 
 void LinkedList_remove(struct LinkedList* list, int value) {
+    if (list->length > 0) {
+        list->length--;
+    }
+
     struct Node* target_node = list->head;
     struct Node* previous_node = NULL;
 
@@ -51,15 +55,15 @@ void LinkedList_remove(struct LinkedList* list, int value) {
         target_node = target_node->next;
     }
 
+    if (target_node == NULL) {
+        return;
+    }
+
     // deleting head
     if (previous_node == NULL) {
         struct Node* head = list->head;
         list->head = list->head->next;
         free(head);
-        return;
-    }
-
-    if (target_node == NULL) {
         return;
     }
 
@@ -96,18 +100,18 @@ int main() {
         LinkedList_append(list, i);
     }
 
-    printf("after append\n");
+    printf("after append, len - %d\n", list->length);
     LinkedList_print(*list);
 
-    for (int i = 2; i < 5; i++) {
+    for (int i = 2; i < 7; i++) {
         LinkedList_remove(list, i);
     }
 
-    printf("after remove\n");
+    printf("after remove, len - %d\n", list->length);
     LinkedList_print(*list);
 
     LinkedList_clear(list);
-    printf("after clear\n");
+    printf("after clear, len - %d\n", list->length);
     LinkedList_print(*list);
 
     free(list);
