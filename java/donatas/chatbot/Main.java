@@ -56,7 +56,7 @@ class PerkRoom implements Room {
         System.out.println("You stumble into the perk room, it's either a godsend, or hell");
 
         double deathMultiplier = this.random.nextDouble(2);
-        int plusLives = this.random.nextInt(20) - 10;
+        int plusLives = this.random.nextInt(30) - 15;
 
         System.out.println(String.format("The RNG gods rolled a *= %1.2f for dying", deathMultiplier));
         System.out.println(String.format("The RNG gods rolled a += %d for lives", plusLives));
@@ -87,7 +87,7 @@ class BossRoom implements Room {
         System.out.println("The fight begins");
         if (this.random.nextDouble(1) < 0.5) {
             System.out.println("Shame, but you lost the fight, the beast marked you");
-            gameState.deathPercentage += 0.1;
+            gameState.deathPercentage += 0.5;
             return;
         }
 
@@ -119,10 +119,11 @@ class GameState {
     public void printInfo() {
         System.out.println(String.format("""
                     [
+                        Level: %d
                         Death on enter: %1.1f%% [%s]
                         Lives: %d
                     ]
-                """, this.deathPercentage * 100, this.getDeathChanceText(), this.lives));
+                """, this.turnCount, this.deathPercentage * 100, this.getDeathChanceText(), this.lives));
     }
 
     private void didDie() {
@@ -135,11 +136,11 @@ class GameState {
     }
 
     private String getDeathChanceText() {
-        if (this.deathPercentage < 0.2) {
+        if (this.deathPercentage < 0.1) {
             return "KMR";
         }
 
-        if (this.deathPercentage > 0.6) {
+        if (this.deathPercentage > 0.3) {
             return "!!!";
         }
 
@@ -192,22 +193,23 @@ class ChatBot {
             this.clearTerminal();
 
             for (Room room : rooms) {
-                if (!room.getKey().equals(roomKey)) {
-                    continue;
+                if (room.getKey().equals(roomKey)) {
+                    foundRoom = true;
+                    room.enter(this.gameState);
+                    break;
                 }
-
-                foundRoom = true;
-                room.enter(this.gameState);
-                break;
             }
 
             if (!foundRoom) {
-                System.out.println("The company does not like corrupt inputs, -1 life");
+                System.out.println(
+                        "The company does not like corrupt inputs, you have been fired, but it's not the usual firing process ;)\n");
+                this.gameState.deathPercentage /= 0.01;
                 this.gameState.lives--;
             }
 
             if (this.gameState.didGameEnd()) {
                 System.out.println("Game over");
+                System.out.println(String.format("You lasted %d levels", this.gameState.turnCount));
                 break;
             }
         }
