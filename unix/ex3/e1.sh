@@ -1,4 +1,5 @@
 #!/bin/bash
+PATH=.
 
 filename=$1
 
