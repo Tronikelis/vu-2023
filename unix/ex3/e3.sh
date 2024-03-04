@@ -7,60 +7,72 @@ contents=$(<$filename)
 
 pairs=()
 
-for ((i = 0; i < ${#contents}; i++)); do
-    char="${contents:$i:1}"
+i=0
 
-    if [[ $i != 0 ]] && [[ $(($i + 1)) != ${#contents} ]]; then
-        if [[ $char == "}" ]] || [[ $char == "{" ]]; then
-            echo "nested json not supported without jq usage :))"
-            exit 1
+getChar() {
+    echo "${contents:$i:1}"
+}
+
+getNextChar() {
+    echo "${contents:$(($i + 1)):1}"
+}
+
+expression=""
+
+parseExpression() {
+    char="$(getChar)"
+    nextChar="$(getNextChar)"
+
+    expression=""
+
+    while [[ $char != "\"" ]]; do
+        if [[ $char == "\\" ]]; then
+            expression+="$nextChar"
+            ((i++))
+        else
+            expression+="$char"
         fi
-    fi
+
+        ((i++))
+
+        char="$(getChar)"
+        nextChar="$(getNextChar)"
+    done
+}
+
+eatWhitespace() {
+    while [[ "$(getChar)" == " " || "$(getChar)" == "\n" || "$(getChar)" == "\t" || "$(getChar)" == "," || $(getChar) == ":" ]]; do
+        ((i++))
+    done
+}
+
+for (( ; i < ${#contents}; i++)); do
+    eatWhitespace
+    char="$(getChar)"
 
     if [[ $char == "\"" ]]; then
-        key=""
         ((i++))
-        char="${contents:$i:1}"
-        nextChar="${contents:$(($i + 1)):1}"
-
-        while [[ $char != "\"" ]]; do
-            if [[ $char == "\\" ]]; then
-                key+="$nextChar"
-                ((i++))
-            else
-                key+="$char"
-            fi
-
-            ((i++))
-            char="${contents:$i:1}"
-            nextChar="${contents:$(($i + 1)):1}"
-        done
-
-        pairs+=("$key")
-        continue
+        parseExpression
+        pairs+=("$expression")
     fi
 
     if [[ $char == "[" ]]; then
-        key=""
         ((i++))
-        char="${contents:$i:1}"
-        nextChar="${contents:$(($i + 1)):1}"
 
-        while [[ $char != "]" ]]; do
-            if [[ $char == "\\" ]]; then
-                key+="$nextChar"
-                ((i++))
-            else
-                key+="$char"
+        combined=""
+
+        while [[ "$(getChar)" != "]" ]]; do
+            eatWhitespace
+            parseExpression
+
+            if [[ ! -z $expression ]]; then
+                combined+="::$expression"
             fi
 
             ((i++))
-            char="${contents:$i:1}"
-            nextChar="${contents:$(($i + 1)):1}"
         done
 
-        pairs+=("$key")
-        continue
+        pairs+=("$combined")
     fi
 done
 
@@ -70,8 +82,7 @@ for ((i = 1; i < ${#pairs[@]}; i += 2)); do
     key="${pairs[$((i - 1))]}"
     value="${pairs[$i]}"
 
-    if [[ $keyOrData == $key ]] || [[ $keyOrData == $value ]] || [[ -z $keyOrData ]]; then
+    if [[ "$keyOrData" == "$key" ]] || [[ "$value" == *"$keyOrData"* ]] || [[ -z $keyOrData ]]; then
         echo "$key: $value"
     fi
-
 done
