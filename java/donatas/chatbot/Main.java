@@ -68,6 +68,37 @@ class PerkRoom implements Room {
     }
 }
 
+class GamblerRoom implements Room {
+    private Random random = new Random();
+
+    public String getKey() {
+        return "gambler";
+    }
+
+    public String getName() {
+        return "The gambler room, a risky proposition awaits";
+    }
+
+    public String getDescription() {
+        return "Take a chance, but be prepared for the consequences...";
+    }
+
+    public void enter(GameState gameState) {
+        System.out.println("You enter the gambler room, a mysterious figure offers you a gamble.");
+
+        if (this.random.nextDouble() < 0.5) {
+            System.out.println("You take the gamble and win! You gain a significant reward.");
+            gameState.deathPercentage /= 100;
+            gameState.lives *= 10;
+            return;
+        }
+
+        System.out.println("You take the gamble and lose! Unlucky lol.");
+        gameState.deathPercentage += 0.5;
+
+    }
+}
+
 class BossRoom implements Room {
     private Random random = new Random();
 
@@ -163,7 +194,11 @@ class ChatBot {
         this.username = "";
         this.gameState = new GameState();
 
-        this.rooms = new ArrayList<>(Arrays.asList(new BossRoom(), new UsualRoom(), new PerkRoom()));
+        this.rooms = new ArrayList<>(Arrays.asList(
+                new BossRoom(),
+                new UsualRoom(),
+                new PerkRoom(),
+                new GamblerRoom()));
 
         this.username = this.readLine("What's your username?");
         if (this.username.isBlank()) {
@@ -212,7 +247,7 @@ class ChatBot {
             this.clearTerminal();
 
             for (Room room : rooms) {
-                if (room.getKey().equals(roomKey)) {
+                if (room.getKey().equalsIgnoreCase(roomKey)) {
                     foundRoom = true;
                     room.enter(this.gameState);
                     break;
