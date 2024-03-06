@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 enum Direction {
@@ -120,7 +122,7 @@ class GameState {
         System.out.println(String.format("""
                     [
                         Level: %d
-                        Death on enter: %1.1f%% [%s]
+                        Death: %1.1f%% [%s]
                         Lives: %d
                     ]
                 """, this.turnCount, this.deathPercentage * 100, this.getDeathChanceText(), this.lives));
@@ -154,15 +156,32 @@ class ChatBot {
     private Random random;
 
     private GameState gameState;
+    private ArrayList<Room> rooms;
 
     public ChatBot() {
         this.random = new Random();
         this.username = "";
         this.gameState = new GameState();
 
+        this.rooms = new ArrayList<>(Arrays.asList(new BossRoom(), new UsualRoom(), new PerkRoom()));
+
         this.username = this.readLine("What's your username?");
         if (this.username.isBlank()) {
             panic("provide a username");
+        }
+
+        this.printIntro();
+    }
+
+    private void printIntro() {
+        System.out.println("""
+                Welcome to the dungeon? game, basically, you have lives, there are rooms to pick to enter,
+                each room differently affects your stats, you have a chance to die on each enter, GLHF!
+                    """);
+
+        if (!this.readLine("Please sign this waiver, so we are not responsible for your safety [accept / im_out]")
+                .toLowerCase().trim().equalsIgnoreCase("accept")) {
+            panic("bye bye");
         }
     }
 
@@ -176,9 +195,9 @@ class ChatBot {
             this.gameState.makeTurn();
             this.gameState.printInfo();
 
-            Room[] rooms = this.getRoomSelections();
+            ArrayList<Room> rooms = this.getRoomSelections(2);
 
-            System.out.println(String.format("You have %d options:", rooms.length));
+            System.out.println(String.format("You have %d options:\n", rooms.size()));
 
             for (Room room : rooms) {
                 System.out.println(String.format("""
@@ -220,24 +239,12 @@ class ChatBot {
         System.exit(1);
     }
 
-    private Room[] getRoomSelections() {
-        Room[] rooms = new Room[2];
+    private ArrayList<Room> getRoomSelections(int len) {
+        ArrayList<Room> rooms = new ArrayList<>();
 
-        for (int i = 0; i < 2; i++) {
-            int random = this.random.nextInt(3);
-
-            switch (random) {
-                case 0:
-                    rooms[i] = new UsualRoom();
-                    break;
-                case 1:
-                    rooms[i] = new PerkRoom();
-                    break;
-                case 2:
-                    rooms[i] = new BossRoom();
-                    break;
-            }
-
+        for (int i = 0; i < len; i++) {
+            int random = this.random.nextInt(this.rooms.size());
+            rooms.add(this.rooms.get(random));
         }
 
         return rooms;
